@@ -1,4 +1,3 @@
-
 # Import packages
 from dash import Dash, html, dash_table, dcc, callback, Output, Input
 import pandas as pd
@@ -26,13 +25,14 @@ app.layout = html.Div([
                        id='my-radio-buttons')
     ]),
 
-        html.Div(className='row', children=[
+    html.Div(className='row', children=[
         html.Div(className='six columns', children=[
             dash_table.DataTable(data=df.to_dict('records'), page_size=11, style_table={'overflowX': 'auto'})
         ]),
         html.Div(className='six columns', children=[
             dcc.Graph(figure={}, id='graph'),
-            dcc.Graph(id='scatter-plot')
+            dcc.Graph(id='scatter-plot'),
+            dcc.Graph(id='distribution-plot')
         ])
     ]),
     html.Div([
@@ -45,16 +45,8 @@ app.layout = html.Div([
             style={'width': '50%'}
         )
     ], style={'padding': '20px'}),
-    
 
-    html.Div(className='row', children=[
-        html.Div(className='six columns', children=[
-            dash_table.DataTable(data=df.to_dict('records'), page_size=11, style_table={'overflowX': 'auto'})
-        ]),
-        html.Div(className='six columns', children=[
-            dcc.Graph(figure={}, id='graph')
-        ])
-    ])
+
 ])
 
 # Add controls to build the interaction
@@ -75,7 +67,15 @@ def update_scatter_plot(selected_column, selected_feature):
     fig = px.scatter(df, x=selected_feature, y=selected_column)
     return fig
 
+# Distribution plot callbacks for Price and Mileage
+@app.callback(
+    Output(component_id='distribution-plot', component_property='figure'),
+    Input(component_id='my-radio-buttons', component_property='value')
+)
+def update_distribution_plot(selected_column):
+    fig = px.histogram(df, x=selected_column, title=f'Distribution of {selected_column.capitalize()}')
+    return fig
+
 # Run the app
 if __name__ == '__main__':
     app.run(debug=True)
-
