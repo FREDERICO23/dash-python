@@ -19,13 +19,33 @@ app.layout = html.Div([
     html.Div(className='row', children=[
         dcc.RadioItems(options=[
                             {'label': 'Mileage', 'value': 'mileage'},
-                            {'label': 'Price', 'value': 'price'},
-                            # Add more options based on available columns in your dataset
+                            {'label': 'Price', 'value': 'price'},                            
                        ],
                        value='mileage',
                        inline=True,
                        id='my-radio-buttons')
     ]),
+
+        html.Div(className='row', children=[
+        html.Div(className='six columns', children=[
+            dash_table.DataTable(data=df.to_dict('records'), page_size=11, style_table={'overflowX': 'auto'})
+        ]),
+        html.Div(className='six columns', children=[
+            dcc.Graph(figure={}, id='graph'),
+            dcc.Graph(id='scatter-plot')
+        ])
+    ]),
+    html.Div([
+        dcc.Dropdown(
+            id='car-features-dropdown',
+            options=[
+                {'label': feature, 'value': feature} for feature in ['make', 'model', 'year', 'transmission', 'fuel']
+            ],
+            value='make',
+            style={'width': '50%'}
+        )
+    ], style={'padding': '20px'}),
+    
 
     html.Div(className='row', children=[
         html.Div(className='six columns', children=[
@@ -44,6 +64,15 @@ app.layout = html.Div([
 )
 def update_graph(selected_column):
     fig = px.histogram(df, x='make', y=selected_column, histfunc='avg')
+    return fig
+
+@app.callback(
+    Output(component_id='scatter-plot', component_property='figure'),
+    Input(component_id='my-radio-buttons', component_property='value'),
+    Input(component_id='car-features-dropdown', component_property='value')
+)
+def update_scatter_plot(selected_column, selected_feature):
+    fig = px.scatter(df, x=selected_feature, y=selected_column)
     return fig
 
 # Run the app
